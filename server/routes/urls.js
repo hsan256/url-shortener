@@ -38,7 +38,8 @@ router.get("/:shortId", async (req, res) => {
   try {
     const url = await Url.findOneAndUpdate(
       { shortId: req.params.shortId },
-      { $inc: { clicks: 1 } }
+      { $inc: { clicks: 1 } },
+      { new: true }
     );
 
     if (url) {
