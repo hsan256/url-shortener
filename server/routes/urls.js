@@ -1,44 +1,53 @@
 import express from "express";
+import { nanoid } from "nanoid";
+import QRCode from "qrcode";
+import validator from "validator";
 import Url from "../models/Url.js";
 
 const router = express.Router();
 
-router.post('/test-create', async (req, res) => {
+router.post("/shorten", async (req, res) => {
+  const { originalUrl } = req.body;
+
+  if (!validator.isURL(originalUrl)) {
+    return res.status(400).json({ error: "Invalid URL" });
+  }
+
   try {
-    const testDoc = await Url.create({
-      originalUrl: 'https://www.arcube.org/',
-      shortId: 'test123',
-      qrCode: 'test-qr'
+    const qrCode = await QRCode.toDataURL(originalUrl);
+
+    const url = new Url({
+      originalUrl,
+      shortId: nanoid(8),
+      qrCode,
     });
-    
+
+    await url.save();
+
     res.json({
-      success: true,
-      document: testDoc
+      shortUrl: `${process.env.BASE_URL}/${url.shortId}`,
+      qrCode: url.qrCode,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-router.get("/test", async (req, res) => {
+router.get("/:shortId", async (req, res) => {
   try {
-    const connectionState = mongoose.connection.readyState;
-    const states = {
-      0: "disconnected",
-      1: "connected",
-      2: "connecting",
-      3: "disconnecting",
-    };
+    const url = await Url.findOneAndUpdate(
+      { shortId: req.params.shortId },
+      { $inc: { clicks: 1 } }
+    );
 
-    res.json({
-      databaseStatus: states[connectionState],
-      message:
-        connectionState === 1
-          ? "Database connection successful!"
-          : "Connection in progress or failed",
-    });
+    if (url) {
+      return res.redirect(url.originalUrl);
+    }
+    res.status(404).json({ error: "URL not found" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
