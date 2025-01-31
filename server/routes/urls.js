@@ -6,15 +6,82 @@ import Url from "../models/Url.js";
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Fetch all URLs
+ *     description: Retrieves all stored URLs sorted by creation date in descending order.
+ *     responses:
+ *       200:
+ *         description: A list of URLs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   originalUrl:
+ *                     type: string
+ *                   shortId:
+ *                     type: string
+ *                   qrCode:
+ *                     type: string
+ *                   clicks:
+ *                     type: integer
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Server error
+ */
+router.get("/", async (req, res) => {
   try {
     const urls = await Url.find().sort({ createdAt: -1 });
     res.json(urls);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
+/**
+ * @swagger
+ * /shorten:
+ *   post:
+ *     summary: Create a shortened URL
+ *     description: Generates a shortened URL and QR code for the provided original URL.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               originalUrl:
+ *                 type: string
+ *                 example: https://example.com
+ *     responses:
+ *       200:
+ *         description: Successfully created shortened URL
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 shortUrl:
+ *                   type: string
+ *                   example: http://yourfrontend.com/abc12345
+ *                 qrCode:
+ *                   type: string
+ *                   example: data:image/png;base64,...
+ *       400:
+ *         description: Invalid URL
+ *       500:
+ *         description: Server error
+ */
 router.post("/shorten", async (req, res) => {
   const { originalUrl } = req.body;
 
@@ -43,6 +110,35 @@ router.post("/shorten", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /{shortId}:
+ *   get:
+ *     summary: Redirect to original URL
+ *     description: Fetches the original URL associated with the given shortId.
+ *     parameters:
+ *       - in: path
+ *         name: shortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier for the shortened URL.
+ *     responses:
+ *       200:
+ *         description: Original URL found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 originalUrl:
+ *                   type: string
+ *                   example: https://example.com
+ *       404:
+ *         description: URL not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:shortId", async (req, res) => {
   try {
     const url = await Url.findOneAndUpdate(
@@ -60,17 +156,72 @@ router.get("/:shortId", async (req, res) => {
   }
 });
 
-router.put('/:shortId', async (req, res) => {
+/**
+ * @swagger
+ * /{shortId}:
+ *   put:
+ *     summary: Update shortId
+ *     description: Updates the shortId of an existing URL.
+ *     parameters:
+ *       - in: path
+ *         name: shortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The current unique identifier for the shortened URL.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               shortId:
+ *                 type: string
+ *                 example: newShortId123
+ *     responses:
+ *       200:
+ *         description: Successfully updated shortId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 originalUrl:
+ *                   type: string
+ *                 shortId:
+ *                   type: string
+ *                 qrCode:
+ *                   type: string
+ *                 clicks:
+ *                   type: integer
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid input or custom URL already taken
+ *       404:
+ *         description: URL not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/:shortId", async (req, res) => {
   const { shortId: newShortId } = req.body;
 
   if (!newShortId || newShortId.length < 4) {
-    return res.status(400).json({ error: "Short ID must be at least 4 characters" });
+    return res
+      .status(400)
+      .json({ error: "Short ID must be at least 4 characters" });
   }
 
   try {
     const existingUrl = await Url.findOne({ shortId: newShortId });
     if (existingUrl) {
-      return res.status(400).json({ error: "This custom URL is already taken" });
+      return res
+        .status(400)
+        .json({ error: "This custom URL is already taken" });
     }
 
     const url = await Url.findOneAndUpdate(
@@ -78,7 +229,7 @@ router.put('/:shortId', async (req, res) => {
       { shortId: newShortId },
       { new: true }
     );
-    
+
     if (!url) return res.status(404).json({ error: "URL not found" });
     res.json(url);
   } catch (err) {
@@ -86,8 +237,36 @@ router.put('/:shortId', async (req, res) => {
   }
 });
 
-
-router.delete('/:shortId', async (req, res) => {
+/**
+ * @swagger
+ * /{shortId}:
+ *   delete:
+ *     summary: Delete a URL
+ *     description: Deletes a URL record from the database.
+ *     parameters:
+ *       - in: path
+ *         name: shortId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier for the shortened URL.
+ *     responses:
+ *       200:
+ *         description: Successfully deleted URL
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: URL deleted successfully
+ *       404:
+ *         description: URL not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:shortId", async (req, res) => {
   try {
     const url = await Url.findOneAndDelete({ shortId: req.params.shortId });
     if (!url) return res.status(404).json({ error: "URL not found" });

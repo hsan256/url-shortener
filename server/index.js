@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db.js";
+import swaggerDocs from "./config/swagger.js";
 import urlsRouter from "./routes/urls.js";
 
 dotenv.config();
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api", urlsRouter);
+
+swaggerDocs(app);
 
 if (process.env.NODE_ENV !== "test") {
   connectDB();
