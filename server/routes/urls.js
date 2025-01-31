@@ -6,6 +6,15 @@ import Url from "../models/Url.js";
 
 const router = express.Router();
 
+router.get('/', async (req, res) => {
+  try {
+    const urls = await Url.find().sort({ createdAt: -1 });
+    res.json(urls);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.post("/shorten", async (req, res) => {
   const { originalUrl } = req.body;
 
@@ -25,7 +34,7 @@ router.post("/shorten", async (req, res) => {
     await url.save();
 
     res.json({
-      shortUrl: `${process.env.BASE_URL}/${url.shortId}`,
+      shortUrl: `${process.env.FRONTEND_URL}/${url.shortId}`,
       qrCode: url.qrCode,
     });
   } catch (err) {
@@ -43,13 +52,50 @@ router.get("/:shortId", async (req, res) => {
     );
 
     if (url) {
-      return res.redirect(url.originalUrl);
+      return res.json({ originalUrl: url.originalUrl });
     }
     res.status(404).json({ error: "URL not found" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+router.put('/:shortId', async (req, res) => {
+  const { shortId: newShortId } = req.body;
+
+  if (!newShortId || newShortId.length < 4) {
+    return res.status(400).json({ error: "Short ID must be at least 4 characters" });
+  }
+
+  try {
+    const existingUrl = await Url.findOne({ shortId: newShortId });
+    if (existingUrl) {
+      return res.status(400).json({ error: "This custom URL is already taken" });
+    }
+
+    const url = await Url.findOneAndUpdate(
+      { shortId: req.params.shortId },
+      { shortId: newShortId },
+      { new: true }
+    );
+    
+    if (!url) return res.status(404).json({ error: "URL not found" });
+    res.json(url);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.delete('/:shortId', async (req, res) => {
+  try {
+    const url = await Url.findOneAndDelete({ shortId: req.params.shortId });
+    if (!url) return res.status(404).json({ error: "URL not found" });
+    res.json({ message: "URL deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 export default router;
