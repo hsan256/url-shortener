@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
   DialogPortal,
   DialogTitle,
   DialogTrigger,
@@ -28,7 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Mail, Pencil, Trash2 } from "lucide-react";
 import QRCode from "qrcode.react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -62,7 +61,10 @@ export default function Home() {
   const [urls, setUrls] = useState<Url[]>([]);
 
   const [selectedUrl, setSelectedUrl] = useState<Url | null>(null);
-  const currentBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const [editableEmailTemplate, setEditableEmailTemplate] = useState("");
+
+  const currentBaseUrl =
+    typeof window !== "undefined" ? window.location.origin : "";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -162,34 +164,34 @@ export default function Home() {
       clicks: url.clicks,
     }))
     .sort((a, b) => b.clicks - a.clicks);
-  
 
   return (
-    <main className="bg-gray-50 min-h-screen text-gray-900">
+    <main className="bg-gradient-to-br from-blue-50 to-white min-h-screen text-gray-900 transition-all duration-500">
       {/* Header */}
       <header className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Arcube.
+          <h1 className="mb-4 text-4xl font-extrabold sm:text-5xl">
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-all duration-500">
+              Arcube{" "}
             </span>
+            URL Shortener
           </h1>
-          <p className="mt-3 text-base text-gray-500 sm:mt-4 sm:max-w-xl sm:mx-auto sm:text-lg">
-            Modern URL shortening with analytics and precision
+          <p className="mt-3 text-lg text-gray-600 sm:mt-4 sm:max-w-xl sm:mx-auto">
+            Shorten, manage, and track your links effortlessly
           </p>
         </div>
       </header>
 
       {/* Shorten URL Card */}
-      <div className="mx-auto mt-12 max-w-2xl px-4 sm:px-6 lg:px-8">
-        <Card className="overflow-hidden border border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">
+      <div className="mx-auto mt-12 max-w-2xl px-4 sm:px-6 lg:px-8 mb-20">
+        <Card className="overflow-hidden rounded-2xl border border-gray-200 shadow-xl">
+          <CardHeader className="bg-gray-50 px-6 py-4">
+            <CardTitle className="text-xl font-semibold text-gray-900">
               Create Short Link
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <CardContent className="p-6 space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <Label
                   htmlFor="url"
@@ -201,7 +203,7 @@ export default function Home() {
                   id="url"
                   placeholder="https://yourlongurl.com/example"
                   {...form.register("url")}
-                  className="mt-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="mt-1 border-gray-200 bg-gray-50 focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                 />
                 {form.formState.errors.url && (
                   <p className="mt-1 text-sm text-red-500">
@@ -212,16 +214,16 @@ export default function Home() {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="w-full bg-blue-600 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Compressing..." : "Shorten URL"}
               </Button>
             </form>
 
+            {/* Display new short URL + QR code */}
             {result && (
-              <div className="space-y-4 border-t border-gray-200 pt-4">
-                {/* Short URL display + copy */}
+              <div className="space-y-6 border-t border-gray-200 pt-4 animate-fadeIn">
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     value={result.shortUrl}
@@ -239,7 +241,6 @@ export default function Home() {
                     Copy
                   </Button>
                 </div>
-                {/* QR code */}
                 <div className="rounded-lg border border-gray-100 p-4">
                   <div className="flex flex-col items-center gap-2">
                     <QRCode
@@ -263,7 +264,7 @@ export default function Home() {
 
       {/* Links Table */}
       <div className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-gray-200 shadow-lg">
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow>
@@ -289,7 +290,7 @@ export default function Home() {
                 return (
                   <TableRow
                     key={url.shortId}
-                    className="border-t border-gray-200"
+                    className="border-t border-gray-200 transition-colors duration-300 hover:bg-blue-50"
                   >
                     <TableCell className="max-w-[220px] truncate px-4 py-3 text-sm font-medium text-gray-900">
                       {url.originalUrl}
@@ -310,7 +311,7 @@ export default function Home() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(url.shortId)}
-                          className="h-8 w-8 rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+                          className="h-8 w-8 rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -320,30 +321,33 @@ export default function Home() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(url.shortId)}
-                          className="h-8 w-8 rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                          className="h-8 w-8 rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
 
-                        {/* VIEW (Dialog) */}
+                        {/* Email Template (Dialog) */}
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 rounded-lg p-2 text-gray-500 hover:bg-gray-100"
-                              onClick={() => setSelectedUrl(url)}
+                              className="h-8 w-8 rounded-lg p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100"
+                              onClick={() => {
+                                setSelectedUrl(url);
+                                setEditableEmailTemplate(
+                                  `Subject: Thank you for flying with us\n\nHello [Name],\n\nWe appreciate you choosing us for your travel needs. Please let us know how your flight experience was by visiting the following link:\n\n${shortUrl}\n\nAlternatively, you can scan the attached QR code to access the survey.\n\nWe look forward to serving you again soon!\n\nBest regards,\n[Airlines Name] Team`
+                                );
+                              }}
                             >
-                              <Eye className="h-4 w-4" />
+                              <Mail className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
 
                           {selectedUrl?.shortId === url.shortId && (
                             <DialogPortal>
-                              {/* Overlay with a solid color (not transparent) */}
-                              <DialogOverlay className="fixed inset-0 z-50 bg-black/40" />
                               <DialogContent
-                                className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-md border border-gray-200 bg-white p-6 shadow-lg"
+                                className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-md border border-gray-200 bg-white p-6 shadow-2xl"
                                 onEscapeKeyDown={() => setSelectedUrl(null)}
                                 onPointerDownOutside={() =>
                                   setSelectedUrl(null)
@@ -352,39 +356,58 @@ export default function Home() {
                               >
                                 <DialogHeader>
                                   <DialogTitle className="text-lg font-semibold">
-                                    Short URL Details
+                                    Email Template
                                   </DialogTitle>
                                   <DialogDescription className="text-sm text-gray-500">
-                                    View the QR code and visit the short link.
+                                    Modify and copy this template for your
+                                    email.
                                   </DialogDescription>
                                 </DialogHeader>
 
-                                {/* Body */}
-                                <div className="mt-4 space-y-4">
-                                  <p className="text-sm text-gray-700">
-                                    <strong>Short URL: </strong>
-                                    <a
-                                      href={shortUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-blue-600 hover:underline"
-                                    >
-                                      {shortUrl}
-                                    </a>
-                                  </p>
-                                  <div className="flex justify-center">
+                                {/* Editable Email Template */}
+                                <div className="mt-4 space-y-6">
+                                  <Label className="mb-1 text-sm font-semibold">
+                                    Email Template
+                                  </Label>
+                                  <textarea
+                                    className="w-full h-44 rounded-md border border-gray-200 bg-gray-50 p-2 text-sm font-mono leading-5 focus:outline-none transition-all duration-300"
+                                    value={editableEmailTemplate}
+                                    onChange={(e) =>
+                                      setEditableEmailTemplate(e.target.value)
+                                    }
+                                  />
+
+                                  {/* Copy button */}
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        editableEmailTemplate
+                                      );
+                                      toast({
+                                        description: "Email template copied!",
+                                      });
+                                    }}
+                                  >
+                                    Copy Email Template
+                                  </Button>
+
+                                  {/* Display QR Code */}
+                                  <div className="flex flex-col items-center gap-2 rounded-lg border border-gray-100 p-4">
                                     <QRCode
                                       value={shortUrl}
-                                      size={160}
+                                      size={128}
                                       bgColor="#ffffff"
                                       fgColor="#1e40af"
                                       level="H"
                                       className="rounded border border-gray-100 p-2"
                                     />
+                                    <span className="text-xs font-medium text-gray-500">
+                                      QR Code
+                                    </span>
                                   </div>
                                 </div>
 
-                                {/* Footer */}
                                 <DialogFooter className="mt-6 flex justify-end">
                                   <Button
                                     variant="outline"
@@ -415,9 +438,9 @@ export default function Home() {
 
       {/* Analytics Card */}
       <div className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8 pb-10">
-        <Card className="border border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">
+        <Card className="border border-gray-200 shadow-xl rounded-2xl">
+          <CardHeader className="bg-gray-50 px-6 py-4">
+            <CardTitle className="text-xl font-semibold text-gray-900">
               Link Performance Analytics
             </CardTitle>
           </CardHeader>
@@ -433,7 +456,7 @@ export default function Home() {
                       tick={{ fill: "#6b7280" }}
                       tickFormatter={(value) => {
                         const url = new URL(value);
-                        return url.pathname.slice(1); // Remove leading slash
+                        return url.pathname.slice(1);
                       }}
                     />
                     <YAxis
