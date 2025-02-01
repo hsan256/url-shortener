@@ -105,9 +105,7 @@ Access [Swagger Documentation](https://deploy-backend-arcube.onrender.com/api-do
 Create an `.env.local` file in the `client/` directory based on the provided `.env.example`:
 
 ```
-MONGO_URI=your_mongodb_connection_string
-BASE_URL=http://localhost:5000
-PORT=5000
+NEXT_PUBLIC_BACKEND_API_URL=http://localhost:5000
 ```
 
 Install dependencies:
