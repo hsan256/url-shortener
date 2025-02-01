@@ -185,7 +185,7 @@ export default function Home() {
       </header>
 
       {/* Shorten URL Card */}
-      <div className="mx-auto mt-12 max-w-2xl px-4 sm:px-6 lg:px-8 mb-20">
+      <div className="mx-auto mt-24 max-w-2xl px-4 sm:px-6 lg:px-8 mb-28">
         <Card className="overflow-hidden rounded-2xl border border-gray-200 shadow-xl">
           <CardHeader className="bg-gray-50 px-6 py-4">
             <CardTitle className="text-xl font-semibold text-gray-900">
@@ -216,7 +216,7 @@ export default function Home() {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl bg-blue-600 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Compressing..." : "Shorten URL"}
