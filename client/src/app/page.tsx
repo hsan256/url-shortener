@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -83,6 +82,7 @@ export default function Home() {
       setUrls(data);
     } catch (error) {
       toast({ variant: "destructive", title: "Error fetching links" });
+      console.error(error);
     }
   };
 
@@ -106,6 +106,7 @@ export default function Home() {
         description: "Failed to shorten URL",
         variant: "destructive",
       });
+      console.error(error);
     }
   };
 
@@ -118,6 +119,7 @@ export default function Home() {
       toast({ description: "Link deleted successfully" });
     } catch (error) {
       toast({ variant: "destructive", title: "Error deleting link" });
+      console.error(error);
     }
   };
 
